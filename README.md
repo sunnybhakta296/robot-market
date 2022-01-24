@@ -3,6 +3,24 @@
 This is an e-commerce site for you to buy robots. The homepage should display a list of robots for people to browse,
 where on the right side of the screen should display a cart that show a list of selected robots.
 
+### Item Listing
+![image](https://user-images.githubusercontent.com/77013204/150834123-a1839354-4985-4d19-b025-719d3a6c1d25.png)
+
+### Item With Filter
+![image](https://user-images.githubusercontent.com/77013204/150833309-e4e8628a-0eca-464a-bb71-cfe33f3aef9c.png)
+
+### Cart feature
+![image](https://user-images.githubusercontent.com/77013204/150834007-7f7642f8-426c-4c5e-b5b3-43989dbc920d.png)
+
+![image](https://user-images.githubusercontent.com/77013204/150834059-e4911a8b-8b1a-4f07-a203-c22d8c885246.png)
+
+### Alert
+![image](https://user-images.githubusercontent.com/77013204/150834280-f8adfb1b-7710-4397-a30f-76482f7c9f7e.png)
+
+![image](https://user-images.githubusercontent.com/77013204/150834368-ddf006cc-40a3-4d2b-917e-7d70a393ffb9.png)
+
+
+
 **Please read the instructions and FAQ below before begin.**
 
 ## Contact Details
