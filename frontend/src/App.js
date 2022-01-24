@@ -5,80 +5,92 @@ import Item from './Item/Item';
 import Cart from './Cart/Cart';
 import Drawer from '@material-ui/core/Drawer';
 import LinearProgress from '@material-ui/core/LinearProgress';
-//import DropDownMenu from '@material-ui/core/DropDownMenu';
 import Grid from '@material-ui/core/Grid';
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
 import Badge from '@material-ui/core/Badge';
-//import DropDownMenu from 'material-ui/DropDownMenu';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import Alert from "@material-ui/lab/Alert";
 
 
 
 import { Wrapper, StyledButton } from './App.styles';
+import { validateCartItems } from './Utils';
 
 const getProducts = async () => {
-  let data =  await (await fetch('http://localhost:8000/api/robots')).json();
-  data.data.map((d, index)=>{
+  let data = await (await fetch('http://localhost:8000/api/robots')).json();
+  data.data.map((d, index) => {
     d.id = index;
     return d
   })
   return data.data
 }
-  
+
 
 const App = () => {
   const [cartOpen, setCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [materials, setMaterials] = useState([])
-  const [material, setMaterial] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [showAlert, setShowAlert] = useState(false);
   const { data, isLoading, error } = useQuery(
     'products',
     getProducts
   );
-  const [searchResult, setSearchResult] = useState([]);
+  const [filteredRobots, setFilteredRobots] = useState([]);
 
-  useEffect(()=>{
-    if (data?.length){
-      const uniqueMaterials = data.map(item => item.material)
-      .filter((value, index, self) => self.indexOf(value) === index)
+  useEffect(() => {
+    if (data?.length) {
+      const uniqueMaterials = [];
+      data.forEach(
+        (d) => !uniqueMaterials.includes(d.material) && uniqueMaterials.push(d.material)
+      );
       setMaterials(uniqueMaterials)
     }
-  },[data])
+  }, [data])
 
-  useEffect(()=>{
-    if (data?.length){
-      if (material){
-        const result = data.filter((d)=>d.material===material);
-        setSearchResult(result)
-      }else {
-        setSearchResult(data)
+  useEffect(() => {
+    if (data?.length) {
+      if (filter && filter != 'all') {
+        const result = data.filter((d) => d.material === filter);
+        setFilteredRobots(result)
+      } else {
+        setFilteredRobots(data)
       }
     }
-  },[material, data])
+  }, [filter, data])
 
   const getTotalItems = (items) =>
     items.reduce((ack, item) => ack + item.amount, 0);
 
   const handleAddToCart = (clickedItem) => {
-    setCartItems(prev => {
-      const isItemInCart = prev.find(item => item.id === clickedItem.id);
+    if (clickedItem.stock > 0) {
+      if (validateCartItems(clickedItem, cartItems)) {
+        clickedItem.stock--;
+        setCartItems(prev => {
+          const isItemInCart = prev.find(item => item.id === clickedItem.id);
 
-      if (isItemInCart) {
-        return prev.map(item =>
-          item.id === clickedItem.id
-            ? { ...item, amount: item.amount + 1 }
-            : item
-        );
+          if (isItemInCart) {
+            return prev.map(item =>
+              item.id === clickedItem.id
+                ? { ...item, amount: item.amount + 1 }
+                : item
+            );
+          }
+          return [...prev, { ...clickedItem, amount: 1 }];
+        });
+
+      } else {
+        //show alert
+        setShowAlert(true)
       }
-      return [...prev, { ...clickedItem, amount: 1 }];
-    });
+    }
   };
 
-  const handleRemoveFromCart = (id) => {
+  const handleRemoveFromCart = (clickedItem) => {
     setCartItems(prev =>
       prev.reduce((ack, item) => {
-        if (item.id === id) {
+        if (item.id === clickedItem.id) {
           if (item.amount === 1) return ack;
           return [...ack, { ...item, amount: item.amount - 1 }];
         } else {
@@ -90,7 +102,7 @@ const App = () => {
 
   const handleMaterial = (event) => {
     console.log(event.target.value, 'material..')
-    setMaterial(event.target.value);
+    setFilter(event.target.value);
   }
 
   if (isLoading) return <LinearProgress />;
@@ -98,16 +110,21 @@ const App = () => {
 
   return (
     <Wrapper>
+      {showAlert && (<Alert onClose={() => { setShowAlert(false) }} severity="warning">
+
+        Only 5 unique item is allowed but you can add unlimited item for these unique 5 items
+      </Alert>)}
       <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={material}
-          label="Select Material"
-          onChange={handleMaterial}
-        >
+        labelId="material-filter-label"
+        id="material-filter"
+        value={filter}
+        label="Select Material"
+        onChange={handleMaterial}
+      >
+        <MenuItem key='all' value="all">All</MenuItem>
         {materials?.map((material) => (<MenuItem key={material} value={material}>{material}</MenuItem>))}
-          
-        </Select>
+
+      </Select>
 
       <Drawer anchor='right' open={cartOpen} onClose={() => setCartOpen(false)}>
         <Cart
@@ -122,7 +139,7 @@ const App = () => {
         </Badge>
       </StyledButton>
       <Grid container spacing={3}>
-        {searchResult?.map(item => (
+        {filteredRobots?.map(item => (
           <Grid item key={item.id} xs={12} sm={4}>
             <Item item={item} handleAddToCart={handleAddToCart} />
           </Grid>

@@ -6,14 +6,13 @@ const Item = ({ item, handleAddToCart }) => (
   <Wrapper>
     <img src={item.image} alt={item.title} />
     <div>
-      <h3>{item.title}</h3>
-      <p>{item.description}</p>
+      <h3>{item.name}</h3>
       <p>Created Date: {formatDate(item.createdAt)}</p>
       <p>Stock: {item.stock}</p>
       <p>Material: {item.material}</p>
       <h3>{formatPrice(item.price)}</h3>
     </div>
-    <Button onClick={() => handleAddToCart(item)}>Add to cart</Button>
+    <Button disabled={!item.stock} onClick={() => handleAddToCart(item)}>Add to cart</Button>
   </Wrapper>
 );
 
